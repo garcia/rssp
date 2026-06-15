@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 use std::sync::Arc;
+#[cfg(not(feature = "no_time"))]
 use std::time::Duration;
 
 use serde_json::{Map as JsonMap, Number as JsonNumber, Value as JsonValue};
@@ -232,6 +233,7 @@ pub struct ChartSummary {
     pub custom_patterns: Vec<CustomPatternSummary>,
     pub short_hash: String,
     pub bpm_neutral_hash: String,
+    #[cfg(not(feature = "no_time"))]
     pub elapsed: Duration,
     pub measure_densities: Vec<usize>,
     pub measure_nps_vec: Vec<f64>,
@@ -308,11 +310,13 @@ pub struct SimfileSummary {
     pub normalized_warps: String,
     pub median_bpm: f64,
     pub average_bpm: f64,
+    #[cfg(not(feature = "no_time"))]
     pub total_length: i32,
     pub global_timing_segments: Arc<TimingSegments>,
     pub pattern_counts_enabled: bool,
     pub tech_counts_enabled: bool,
     pub charts: Vec<ChartSummary>,
+    #[cfg(not(feature = "no_time"))]
     pub total_elapsed: Duration,
 }
 
@@ -332,6 +336,7 @@ pub struct CourseSummary {
     pub course: String,
     pub course_difficulty: String,
     pub step_type: String,
+    #[cfg(not(feature = "no_time"))]
     pub total_length: i32,
     pub entries: Vec<CourseEntrySummary>,
     pub chart: ChartSummary,
@@ -339,6 +344,7 @@ pub struct CourseSummary {
     pub bpm_neutral_sha1_hashes: Vec<String>,
     pub pattern_counts_enabled: bool,
     pub tech_counts_enabled: bool,
+    #[cfg(not(feature = "no_time"))]
     pub total_elapsed: Duration,
 }
 
@@ -402,6 +408,7 @@ pub fn format_json_float(value: f64) -> String {
     format!("{value:.2}")
 }
 
+#[cfg(not(feature = "no_time"))]
 fn format_duration(seconds: i32) -> String {
     let minutes = seconds / 60;
     let seconds = seconds % 60;
@@ -455,11 +462,13 @@ fn dummy_simfile_for_course(course: &CourseSummary) -> SimfileSummary {
         normalized_warps: String::new(),
         median_bpm: 0.0,
         average_bpm: 0.0,
+        #[cfg(not(feature = "no_time"))]
         total_length: course.total_length,
         global_timing_segments: Default::default(),
         pattern_counts_enabled: course.pattern_counts_enabled,
         tech_counts_enabled: course.tech_counts_enabled,
         charts: Vec::new(),
+        #[cfg(not(feature = "no_time"))]
         total_elapsed: course.total_elapsed,
     }
 }
@@ -469,6 +478,7 @@ fn write_pretty_course<W: Write>(writer: &mut W, course: &CourseSummary) -> io::
     writeln!(writer, "Course: {}", course.course)?;
     writeln!(writer, "Difficulty: {}", course.course_difficulty)?;
     writeln!(writer, "StepsType: {}", course.step_type)?;
+    #[cfg(not(feature = "no_time"))]
     writeln!(writer, "Length: {}", format_duration(course.total_length))?;
     writeln!(writer, "Entries: {}", course.entries.len())?;
 
@@ -497,6 +507,7 @@ fn write_full_course<W: Write>(writer: &mut W, course: &CourseSummary) -> io::Re
     writeln!(writer, "Course: {}", course.course)?;
     writeln!(writer, "Difficulty: {}", course.course_difficulty)?;
     writeln!(writer, "StepsType: {}", course.step_type)?;
+    #[cfg(not(feature = "no_time"))]
     writeln!(writer, "Length: {}", format_duration(course.total_length))?;
     writeln!(writer, "Entries: {}", course.entries.len())?;
 
@@ -519,6 +530,7 @@ fn write_full_course<W: Write>(writer: &mut W, course: &CourseSummary) -> io::Re
 
     let dummy = dummy_simfile_for_course(course);
     write_full_chart(writer, &course.chart, &dummy)?;
+    #[cfg(not(feature = "no_time"))]
     writeln!(writer, "\nElapsed Time: {:?}", course.total_elapsed)?;
     Ok(())
 }
@@ -538,6 +550,7 @@ fn write_json_course_materialized<W: Write>(
         "step_type".to_string(),
         JsonValue::from(course.step_type.clone()),
     );
+    #[cfg(not(feature = "no_time"))]
     root_obj.insert(
         "length".to_string(),
         JsonValue::from(course.total_length.to_string()),
@@ -700,6 +713,7 @@ fn write_csv_course_materialized<W: Write>(
     let chart = &course.chart;
     let hashes = course.sha1_hashes.join("|");
     let bpm_hashes = course.bpm_neutral_sha1_hashes.join("|");
+    #[cfg(not(feature = "no_time"))]
     writeln!(
         writer,
         "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{:.6},{:.2}",
@@ -707,6 +721,30 @@ fn write_csv_course_materialized<W: Write>(
         course.course_difficulty,
         course.step_type,
         format_duration(course.total_length),
+        course.entries.len(),
+        hashes,
+        bpm_hashes,
+        chart.stats.total_arrows,
+        chart.stats.total_steps,
+        chart.stats.jumps,
+        chart.stats.hands,
+        chart.stats.holds,
+        chart.stats.rolls,
+        chart.stats.mines,
+        chart.stats.lifts,
+        chart.stats.fakes,
+        chart.total_streams,
+        chart.stream_counts.total_breaks,
+        chart.max_nps,
+        chart.median_nps
+    )?;
+    #[cfg(feature = "no_time")]
+    writeln!(
+        writer,
+        "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{:.6},{:.2}",
+        course.course,
+        course.course_difficulty,
+        course.step_type,
         course.entries.len(),
         hashes,
         bpm_hashes,
@@ -1848,6 +1886,7 @@ fn write_pretty_all<W: Write>(writer: &mut W, simfile: &SimfileSummary) -> io::R
         },
         simfile.artist_str
     )?;
+    #[cfg(not(feature = "no_time"))]
     writeln!(writer, "Length: {}", format_duration(simfile.total_length))?;
     if (simfile.min_bpm - simfile.max_bpm).abs() < f64::EPSILON {
         writeln!(writer, "BPM: {:.0}", simfile.min_bpm)?;
@@ -2012,6 +2051,7 @@ fn write_full_all<W: Write>(writer: &mut W, simfile: &SimfileSummary) -> io::Res
         writeln!(writer, "Artist trans: {}", simfile.artisttranslit_str)?;
     }
 
+    #[cfg(not(feature = "no_time"))]
     writeln!(writer, "Length: {}", format_duration(simfile.total_length))?;
     if (simfile.min_bpm - simfile.max_bpm).abs() < f64::EPSILON {
         writeln!(writer, "BPM: {:.0}", simfile.min_bpm)?;
@@ -2026,6 +2066,7 @@ fn write_full_all<W: Write>(writer: &mut W, simfile: &SimfileSummary) -> io::Res
     for chart in &simfile.charts {
         write_full_chart(writer, chart, simfile)?;
     }
+    #[cfg(not(feature = "no_time"))]
     writeln!(writer, "\nElapsed Time: {:?}", simfile.total_elapsed)?;
 
     Ok(())
@@ -4231,6 +4272,7 @@ fn write_json_all_materialized<W: Write>(
         "artist_trans".to_string(),
         JsonValue::from(simfile.artisttranslit_str.clone()),
     );
+    #[cfg(not(feature = "no_time"))]
     root_obj.insert(
         "length".to_string(),
         JsonValue::from(simfile.total_length.to_string()),
@@ -4420,6 +4462,7 @@ fn write_csv_row<W: Write>(
     push_str(&mut row, &simfile.titletranslit_str);
     push_str(&mut row, &simfile.subtitletranslit_str);
     push_str(&mut row, &simfile.artisttranslit_str);
+    #[cfg(not(feature = "no_time"))]
     push_duration(&mut row, simfile.total_length);
 
     if (simfile.min_bpm - simfile.max_bpm).abs() < f64::EPSILON {

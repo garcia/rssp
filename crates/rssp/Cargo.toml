@@ -15,6 +15,7 @@ serde_json = { version = "1.0.145", features = ["preserve_order"] }
 
 [features]
 profile = ["rssp-core/bench-support"]
+no_time = ["rssp-core/no_time"]
 
 [dev-dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
