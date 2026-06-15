@@ -1,4 +1,4 @@
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct StreamCounts {
     pub run16_streams: u32,
     pub run20_streams: u32,
