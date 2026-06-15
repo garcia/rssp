@@ -10,6 +10,9 @@ keywords = ["stepmania", "simfile", "parser", "rust", "rssp"]
 
 [dependencies]
 
+[features]
+no_time = []
+
 [lints.clippy]
 pedantic = "warn"
 

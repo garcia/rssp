@@ -2,6 +2,7 @@ use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::fs;
 use std::hint::black_box;
 use std::path::{Path, PathBuf};
+#[cfg(not(feature = "no_time"))]
 use std::time::Duration;
 use walkdir::WalkDir;
 

@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use std::sync::Arc;
+#[cfg(not(feature = "no_time"))]
 use std::time::Instant;
 
 use crate::duration::{self, TimingOffsets};
@@ -357,6 +358,7 @@ fn build_chart_summary(
     parity_scratch8: &mut Option<step_parity::TimingRowsScratch<8>>,
     options: &AnalysisOptions,
 ) -> Option<(ChartSummary, i32)> {
+    #[cfg(not(feature = "no_time"))]
     let chart_start_time = Instant::now();
 
     if entry.field_count < 5 {
@@ -748,6 +750,7 @@ fn build_chart_summary(
     let mines_nonfake = timing_stats.mines;
     stats = timing_stats;
 
+    #[cfg(not(feature = "no_time"))]
     let elapsed_chart = chart_start_time.elapsed();
 
     Some((
@@ -790,6 +793,7 @@ fn build_chart_summary(
             custom_patterns,
             short_hash: metrics.short_hash,
             bpm_neutral_hash: metrics.bpm_neutral_hash,
+            #[cfg(not(feature = "no_time"))]
             elapsed: elapsed_chart,
             measure_densities,
             measure_nps_vec,
@@ -823,6 +827,7 @@ pub fn analyze(
     extension: &str,
     options: &AnalysisOptions,
 ) -> Result<SimfileSummary, String> {
+    #[cfg(not(feature = "no_time"))]
     let total_start_time = Instant::now();
 
     let parsed_data = extract_sections(simfile_data, extension).map_err(|e| e.to_string())?;
@@ -1088,6 +1093,7 @@ pub fn analyze(
         return Err("No matching steps".to_string());
     }
 
+    #[cfg(not(feature = "no_time"))]
     let total_elapsed = total_start_time.elapsed();
 
     let offset_rounded = round_dp(offset, 3);
@@ -1125,10 +1131,12 @@ pub fn analyze(
         max_bpm: f64::from(max_bpm_i32),
         median_bpm,
         average_bpm,
+        #[cfg(not(feature = "no_time"))]
         total_length,
         pattern_counts_enabled: options.compute_pattern_counts,
         tech_counts_enabled: options.compute_tech_counts,
         charts: chart_summaries,
+        #[cfg(not(feature = "no_time"))]
         total_elapsed,
     })
 }

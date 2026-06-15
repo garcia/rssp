@@ -1,5 +1,6 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
+#[cfg(not(feature = "no_time"))]
 use std::time::Duration;
 
 use rssp::stats::{BreakdownMode, StreamBreakdownLevel};

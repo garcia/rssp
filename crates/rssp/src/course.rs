@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+#[cfg(not(feature = "no_time"))]
 use std::time::{Duration, Instant};
 
 use crate::analysis::AnalysisOptions;
@@ -560,6 +561,7 @@ fn empty_course_chart(step_type: &str, course_difficulty: Difficulty, meter: i32
         custom_patterns: Vec::new(),
         short_hash: String::new(),
         bpm_neutral_hash: String::new(),
+        #[cfg(not(feature = "no_time"))]
         elapsed: Duration::ZERO,
         measure_densities: Vec::new(),
         measure_nps_vec: Vec::new(),
@@ -825,6 +827,7 @@ pub fn analyze_crs_path(
     course_difficulty: &str,
     options: AnalysisOptions,
 ) -> Result<CourseSummary, String> {
+    #[cfg(not(feature = "no_time"))]
     let start = Instant::now();
     let data = std::fs::read(course_path).map_err(|e| e.to_string())?;
     let course = parse_crs(&data)?;
@@ -945,13 +948,16 @@ pub fn analyze_crs_path(
     total.short_hash = hash_list.join(", ");
     total.bpm_neutral_hash = bpm_neutral_hash_list.join(", ");
 
+    #[cfg(not(feature = "no_time"))]
     let elapsed = start.elapsed();
+    #[cfg(not(feature = "no_time"))]
     let total_length = total.duration_seconds.floor().max(0.0) as i32;
 
     Ok(CourseSummary {
         course: course.name,
         course_difficulty: difficulty_label(course_diff).to_string(),
         step_type,
+        #[cfg(not(feature = "no_time"))]
         total_length,
         entries,
         chart: total,
@@ -959,6 +965,7 @@ pub fn analyze_crs_path(
         bpm_neutral_sha1_hashes: bpm_neutral_hash_list,
         pattern_counts_enabled: options.compute_pattern_counts,
         tech_counts_enabled: options.compute_tech_counts,
+        #[cfg(not(feature = "no_time"))]
         total_elapsed: elapsed,
     })
 }
